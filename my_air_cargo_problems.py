@@ -199,8 +199,12 @@ class AirCargoProblem(Problem):
         conditions by ignoring the preconditions required for an action to be
         executed.
         """
-        # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
+        # implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
         count = 0
+        goals = list(self.goal)
+        state = decode_state(node.state, self.state_map).pos_sentence()
+        count += sum([1 for goal in str(goals) if str(goal) not in str(state)])
+        print('Estimating {} actions to reach {} from {}'.format(count, goals, state))
         return count
 
 
