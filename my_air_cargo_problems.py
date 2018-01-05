@@ -136,7 +136,7 @@ class AirCargoProblem(Problem):
         kb.tell(init_state.pos_sentence())
 
         possible_actions = []
-        for action in self.action_list:
+        for action in self.actions_list:
             unmet_precond_pos = sum([1 for c in action.precond_pos if c not in kb.clauses])
             unmet_precond_neg = sum([1 for c in action.precond_neg if c not in kb.clauses])
             if unmet_precond_neg + unmet_precond_pos == 0:
