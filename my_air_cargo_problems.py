@@ -155,8 +155,10 @@ class AirCargoProblem(Problem):
         new_state = FluentState([], [])
         old_state = decode_state(state, self.state_map)
 
-        new_state.pos = list(set([p for p in old_state.pos if p not in action.effect_rem]) + set(action.effect_add))
-        new_state.neg = list(set([p for p in old_state.neg if p not in action.effect_add]) + set(action.effect_rem))
+        new_state.pos = [p for p in old_state.pos if p not in action.effect_rem]
+        new_state.pos = new_state.pos + list(set(action.effect_add) - set(new_state.pos)) # additional (unique, positive) states created by action
+        new_state.neg = [p for p in old_state.neg if p not in action.effect_add]
+        new_state.neg = new_state.neg + list(set(action.effect_rem) - set(new_state.neg)) # additional (unique, negative) states created by action
 
         return encode_state(new_state, self.state_map)
 
@@ -245,8 +247,8 @@ def air_cargo_p2() -> AirCargoProblem:
            expr('In(C2, P1)'),
            expr('In(C2, P2)'),
            expr('In(C2, P3)'),
-           expr('AT(C3, JFK'),
-           expr('AT(C3, SFO'),
+           expr('AT(C3, JFK)'),
+           expr('AT(C3, SFO)'),
            expr('In(C3, P1)'),
            expr('In(C3, P2)'),
            expr('In(C3, P3)'),
