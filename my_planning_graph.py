@@ -319,10 +319,9 @@ class PlanningGraph():
         # create relationships
         for a_node in possible_actions:
             for s_node in state:
-                s_node.children.append(a_node)
-                a_node.parents.append(s_node)
-
-        self.a_levels[level] = possible_actions
+                s_node.children.add(a_node)
+                a_node.parents.add(s_node)
+        self.a_levels.append(possible_actions)
 
     def add_literal_level(self, level):
         """ add an S (literal) level to the Planning Graph
@@ -349,10 +348,9 @@ class PlanningGraph():
             for s_node in a_node.effnodes:
                 possible_states.append(s_node)
                 # create relationships
-                s_node.parents.append(a_node)
-                a_node.children.append(s_node)
-
-        self.s_levels[level] = possible_states
+                s_node.parents.add(a_node)
+                a_node.children.add(s_node)
+        self.s_levels.append(possible_states)
 
     def update_a_mutex(self, nodeset):
         """ Determine and update sibling mutual exclusion for A-level nodes
@@ -410,8 +408,10 @@ class PlanningGraph():
         :param node_a2: PgNode_a
         :return: bool
         """
-        # TODO test for Inconsistent Effects between nodes
-        return False
+        # test for Inconsistent Effects between nodes
+        inconsistent_actions = [1 for a1 in node_a1.action.effect_add if a1 in node_a2.action.effect_rem]
+        inconsistent_actions += [1 for a1 in node_a1.action.effect_rem if a1 in node_a2.action.effect_add]
+        return sum(inconsistent_actions) > 0
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
