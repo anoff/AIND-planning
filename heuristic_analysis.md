@@ -6,10 +6,20 @@
 	- [Problem 1](#problem-1)
 	- [Problem 2](#problem-2)
 	- [Problem 3](#problem-3)
-- [Used Algorithms](#used-algorithms)
-- [Comparison](#comparison)
+- [Non-heuristic Searches](#non-heuristic-searches)
+	- [Used Algorithms](#used-algorithms)
+	- [Comparison](#comparison)
 	- [Observations](#observations)
-- [Conclusion](#conclusion)
+	- [Conclusion](#conclusion)
+- [Heuristic Searches (A*)](#heuristic-searches-a)
+	- [Comparison](#comparison-1)
+	- [Observations](#observations-1)
+	- [Conclusion](#conclusion-1)
+- [Comparing heuristic and non-heuristic approaches](#comparing-heuristic-and-non-heuristic-approaches)
+- [Optimal solutions](#optimal-solutions)
+	- [Problem 1: 6 steps](#problem-1-6-steps)
+	- [Problem 2: 9 steps](#problem-2-9-steps)
+	- [Problem 3: 12 steps](#problem-3-12-steps)
 
 <!-- /TOC -->
 
@@ -70,7 +80,8 @@ Init(At(C1, SFO) ∧ At(C2, JFK) ∧ At(C3, ATL) ∧ At(C4, ORD)
 Goal(At(C1, JFK) ∧ At(C3, JFK) ∧ At(C2, SFO) ∧ At(C4, SFO))
 ```
 
-## Used Algorithms
+## Non-heuristic Searches
+### Used Algorithms
 
 The following algorithms are used to solve the above problems.
 
@@ -80,7 +91,7 @@ The following algorithms are used to solve the above problems.
 1. [Uniform Cost Search (UCS)](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
 1. [Greedy Best First Search (GBFS)](https://en.wikipedia.org/wiki/Best-first_search)
 
-## Comparison
+### Comparison
 
 The complete combination of problems and algorithms can be run with `python run_search.py -p 1 2 3 -s 1 3 4 5 7`
 
@@ -110,9 +121,101 @@ Those algorithms that yield the best results have a high number of iterated node
 
 To my surprise the Depth Limited Search performs really bad in both categories. It takes longer than other algorithms to find a solution and the solution has one of the longest paths.
 
-## Conclusion
+### Conclusion
 
 With the observations made from this comparison the following conclusions can be made:
 
 1. For scenarios where the search duration needs to be minimized the `Greedy Best First` Algorithm delivers solutions quickly, however not the best solution
 2. If the application allows for more time during the search the algorithms `Breadth First` or `Uniform Cost Search` deliver the solution with the lowest cost (shortest path).
+
+## Heuristic Searches (A*)
+
+In this chapter multiple heuristics for the A-Star algorithm will be benchmarked on the three Cargo Problems.
+
+### Comparison
+
+The complete combination of problems and algorithms can be run with `python run_search.py -p 1 2 3 -s 8 9 10`
+
+| Problem | Heuristic | Expansions | Goal Tests | Nodes | Plan Length | Duration [s] |
+|---------|-----------|------------|------------|-------|-------------|----------|
+| 1       | H1        |     55     |     57     |  224  |   6         |     0.05 |
+| 1       | h_ignore_preconditions |     39     |     41     |  150  |   6         |     0.1 |
+| 1       | h_pg_levelsum |     11     |     13     |  50  |   6         |     1.4 |
+| 2       | H1        |     4852   |    4854    | 44030 |   9         |   15.9   |
+| 2       |h_ignore_preconditions  |     3348   |    3350    | 29614 |   9         |   28.1   |
+| 2       |h_pg_levelsum  |     86   |    88    | 841 |   9         |   281.9   |
+| 3       | H1        |   18164    |   18166    |159147 |   12        |   59.8   |
+| 3       | h_ignore_preconditions        |   12532    |   12534    |106226 |   13        |   127.0   |
+| 3       | h_pg_levelsum        |   316    |   318    |2913 |   12        |   1363.3   |
+
+### Observations
+
+Heuristic algorithms take a lot longer to come up with the solution in this problem space. This might be due to the nature of heuristic approaches as they require additional computing time to calculate the heuristic score in each iteration. Although comparing the increase in search duration shows that different heuristics have a different effect. They all find a solution with the same path length though.
+
+Heuristic | Problem1: Multiples of BFS duration (absolute Duration) | Problem2: Multiples of BFS duration (absolute Duration) | Problem3: Multiples of BFS duration (absolute Duration) |
+|-----------|------------|------------|-------|
+| H1        | 1.6 (0.05 s) | 1.6 (15.9 s) | 1.2 (59.8 s) |
+| h_ignore_preconditions |  3.3 (0.1 s) | 2.9 (28.1 s) | 2.5 (127.0 s) |
+| h_pg_levelsum |  46.6 (1.4 s) | 28.8 (281.9 s) | 27.3 (1363.3 s) |
+
+
+### Conclusion
+
+Different heuristics have a big impact on the number of expansions but dominantly on the duration of the planning operation.
+The above table however shows that with increasing problem complexity the heuristic approach gets closer to the best time reachd by a non-heuristic algorith (Breadth First Algorithm).
+
+The best heuristic in this case was the H1 followed by Ignore Preconditions. They takae significantly longer than their non-heuristic counterparts in finding an optimal solution though.
+
+## Comparing heuristic and non-heuristic approaches
+
+Heuristic approaches require more computing power to find a solution. However they do not necessarily take more node expansions to reach the goal state. This property is useful in real world scenarios where computing power but the outcome of an action might be unknown unless tested out. In such a scenario the agent would take the costly step in the real world, monitor the result and do the heuristic calculations depending on the outcome.
+
+## Optimal solutions
+
+### Problem 1: 6 steps
+
+Generated with Breadth First Search.
+
+```
+Load(C2, P2, JFK)
+Load(C1, P1, SFO)
+Fly(P2, JFK, SFO)
+Unload(C2, P2, SFO)
+Fly(P1, SFO, JFK)
+Unload(C1, P1, JFK)
+```
+
+### Problem 2: 9 steps
+
+Generated with Uniform Cost Search
+
+```
+Load(C1, P1, SFO)
+Load(C2, P2, JFK)
+Load(C3, P3, ATL)
+Fly(P1, SFO, JFK)
+Fly(P2, JFK, SFO)
+Fly(P3, ATL, SFO)
+Unload(C3, P3, SFO)
+Unload(C2, P2, SFO)
+Unload(C1, P1, JFK)
+```
+
+### Problem 3: 12 steps
+
+Generated with A-Star (h_pg_levelsum heuristic)
+
+```
+Load(C2, P2, JFK)
+Fly(P2, JFK, ORD)
+Load(C4, P2, ORD)
+Fly(P2, ORD, SFO)
+Load(C1, P1, SFO)
+Fly(P1, SFO, ATL)
+Load(C3, P1, ATL)
+Fly(P1, ATL, JFK)
+Unload(C3, P1, JFK)
+Unload(C1, P1, JFK)
+Unload(C4, P2, SFO)
+Unload(C2, P2, SFO)
+```
