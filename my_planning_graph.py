@@ -346,10 +346,11 @@ class PlanningGraph():
         # identify possible states
         for a_node in actions:
             for s_node in a_node.effnodes:
-                possible_states.append(s_node)
-                # create relationships
-                s_node.parents.add(a_node)
-                a_node.children.add(s_node)
+                if s_node not in possible_states:
+                    possible_states.append(s_node)
+                    # create relationships
+                    s_node.parents.add(a_node)
+                    a_node.children.add(s_node)
         self.s_levels.append(possible_states)
 
     def update_a_mutex(self, nodeset):
