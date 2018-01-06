@@ -299,13 +299,30 @@ class PlanningGraph():
         :return:
             adds A nodes to the current level in self.a_levels[level]
         """
-        # TODO add action A level to the planning graph as described in the Russell-Norvig text
+        # add action A level to the planning graph as described in the Russell-Norvig text
         # 1. determine what actions to add and create those PgNode_a objects
         # 2. connect the nodes to the previous S literal level
         # for example, the A0 level will iterate through all possible actions for the problem and add a PgNode_a to a_levels[0]
-        #   set iff all prerequisite literals for the action hold in S0.  This can be accomplished by testing
+        #   set if all prerequisite literals for the action hold in S0.  This can be accomplished by testing
         #   to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.  Once an
         #   action node is added, it MUST be connected to the S node instances in the appropriate s_level set.
+        actions = self.all_actions
+        state = self.s_levels[level]
+        # identify possible actions
+        possible_actions = []
+        for action in actions:
+            tmp_node = PgNode_a(action)
+
+            if tmp_node.prenodes.issubset(state):
+                possible_actions.append(tmp_node)
+        
+        # create relationships
+        for a_node in possible_actions:
+            for s_node in state:
+                s_node.children.append(a_node)
+                a_node.parents.append(s_node)
+
+        self.a_levels[level] = possible_actions
 
     def add_literal_level(self, level):
         """ add an S (literal) level to the Planning Graph
@@ -316,7 +333,7 @@ class PlanningGraph():
         :return:
             adds S nodes to the current level in self.s_levels[level]
         """
-        # TODO add literal S level to the planning graph as described in the Russell-Norvig text
+        # add literal S level to the planning graph as described in the Russell-Norvig text
         # 1. determine what literals to add
         # 2. connect the nodes
         # for example, every A node in the previous level has a list of S nodes in effnodes that represent the effect
@@ -324,6 +341,18 @@ class PlanningGraph():
         #   may be "added" to the set without fear of duplication.  However, it is important to then correctly create and connect
         #   all of the new S nodes as children of all the A nodes that could produce them, and likewise add the A nodes to the
         #   parent sets of the S nodes
+
+        actions = self.a_levels[level - 1]
+        possible_states = []
+        # identify possible states
+        for a_node in actions:
+            for s_node in a_node.effnodes:
+                possible_states.append(s_node)
+                # create relationships
+                s_node.parents.append(a_node)
+                a_node.children.append(s_node)
+
+        self.s_levels[level] = possible_states
 
     def update_a_mutex(self, nodeset):
         """ Determine and update sibling mutual exclusion for A-level nodes
